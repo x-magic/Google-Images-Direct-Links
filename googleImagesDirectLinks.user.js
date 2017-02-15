@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		Google Images direct links
-// @version		1.1
-// @downloadURL	https://github.com/svArtist/barf.js
+// @version		1.2
+// @downloadURL	https://github.com/svArtist/Google-Images-Direct-Links/raw/master/googleImagesDirectLinks.user.js
 // @namespace	Google
 // @author		Benjamin Philipp <benjamin_philipp [at - please don't spam] gmx.de>
 // @description	Add direct links to the Google Images search results. LeftClick to open image, CTRL+LeftClick to open source page
