@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name		Google Images direct links
-// @version		1.2
+// @version		1.3
 // @downloadURL	https://github.com/svArtist/Google-Images-Direct-Links/raw/master/googleImagesDirectLinks.user.js
 // @namespace	Google
 // @author		Benjamin Philipp <benjamin_philipp [at - please don't spam] gmx.de>
@@ -63,7 +63,7 @@ function updatePage()
 		{
             $(tp).attr("resTries", $(tp).attr("resTries")?$(tp).attr("resTries")*1+1:1);
             if($(tp).attr("resTries")*1>=maxtries){
-                console.log("This Link won't come up with a good fragment: " + $(tp).find("img")[0].src);
+                // console.log("This Link won't come up with a good fragment: " + $(tp).find("img")[0].src);
                 return true;
             }
 			updater();
