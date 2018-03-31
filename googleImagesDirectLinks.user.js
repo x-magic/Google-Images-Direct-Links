@@ -1,12 +1,11 @@
 // ==UserScript==
 ///////////////// In case it fails to update in TamperMonkey, visit  https://github.com/svArtist/Google-Images-Direct-Links/raw/master/googleImagesDirectLinks.user.js  directly ////////
 // @name		Google Images direct links
-// @version		1.4
 // @downloadURL	https://github.com/svArtist/Google-Images-Direct-Links/raw/master/googleImagesDirectLinks.user.js
+// @version		1.5
 // @description Add direct links to the picture and the page link to the Google Image Search results.
 // @namespace	Google
-// @author		Benjamin Philipp <benjamin_philipp [at - please don't spam] gmx.de>
-// @description	Add direct links to the Google Images search results. LeftClick to open image, CTRL+LeftClick to open source page
+// @author		Benjamin Philipp <dev [at - please don't spam] benjamin-philipp.com>
 // @include		/^https?:\/\/(www\.)*google\.[a-z\.]{2,5}\/search.*tbm=isch.*/
 // @require 	http://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js
 // @run-at		document-body
@@ -14,15 +13,14 @@
 // @connect		*
 // ==/UserScript==
 
+var updateInterval = 1000;
 var maxtries = 10;
 
 var idle = true;
-var disableUpdate = false;
 
 function updatePage()
 {
 	if($("#directLinkStyles").length<=0){
-		disableUpdate = true;
 		$("head").append("\
 		<style id='directLinkStyles'>\
 		.linkToTarget{\
@@ -33,6 +31,9 @@ function updatePage()
 			opacity: 0; \
 			background-color: rgba(255,255,255,0.5);\
 			transition: background-color 0.5s, opacity 0.5s \
+		}\
+		.failed .linkToTarget span{\
+			color: rgba(230,100,100, 0.7)!important; \
 		}\
 		a:hover .linkToTarget{\
 			opacity: 0.6; \
@@ -59,21 +60,28 @@ function updatePage()
 			font-size: 36pt; \
 		} \
 		</style>");
-		disableUpdate = false;
 	}
 
-	$(".rg_di.rg_bx a.rg_l:not(.linksdone):not([href='#'])").each(function(){
+	$(".rg_di.rg_bx a.rg_l:not(.linksdone)").each(function(){
+//		console.log(this);
 		var tp = this;
-		var tppar = $(this).parent();
+		var tppar = $(tp).parent();
 		var imin = tp.href.indexOf("imgurl=");
 		if(imin<0)
 		{
             $(tp).attr("resTries", $(tp).attr("resTries")?$(tp).attr("resTries")*1+1:1);
             if($(tp).attr("resTries")*1>=maxtries){
                 console.log("This Link won't come up with a good fragment: " + $(tp).find("img")[0].src);
+				$(tp).addClass("linksdone");
+				$(tp).addClass("failed");
+				$(tp).find(".linkToTarget span").html("x");
                 return true;
             }
-			updater();
+			if(!$(tp).hasClass("linkswait")){
+				$(tp).addClass("linkswait");
+				$(tp).append("<div class='linkToTarget temp'><span>...</span></div>");
+			}
+//			console.log("Not ready");
 			return true;
 		}
 		var linkconts = tp.href.substr(imin+7);
@@ -81,77 +89,20 @@ function updatePage()
 		var reflink = linkconts.substr(linkconts.indexOf("imgrefurl=")+10);
 		reflink = decodeURIComponent(reflink.substr(0, reflink.indexOf("&")));
 		piclink = decodeURIComponent(piclink);
-		disableUpdate = true;
-		var dirlink = $("<a class='linkToTargetLink' href='" + piclink + "'>+</a>");
-        $(this).removeClass("linkswait");
-		var templink = $(tppar).find(".linkToTarget.temp")[0];
-		$(templink).removeClass("temp");
-		$(templink).html(dirlink);
-		$(this).addClass("linksdone");
+		$(tp).find(".linkToTarget.temp").remove();
+		$(tp).append("<div class='linkToTarget'><a class='linkToTargetLink' href='" + piclink + "'>+</a></div>");
+        $(tp).removeClass("linkswait");
+		$(tp).addClass("linksdone");
 		
 		var urilink = $(tppar).find(".rg_ilmbg")[0];
 		$(urilink).html("<a style='display: block; color: #fff; text-decoration: none;' href='" + reflink + "'>" + urilink.innerHTML + "</a>");
 		
-		$(dirlink).add(urilink).click(function(e){
+		$(tp).find(".linkToTargetLink").add(urilink).click(function(e){
 			e.stopImmediatePropagation();
 		});
-		
-		disableUpdate = false;
 	});
-    var notready = false;
-    $(".rg_di.rg_bx a.rg_l[href='#']:not(.linksdone)").each(function(){
-        notready = true;
-        if(!$(this).hasClass("linkswait")){
-            $(this).addClass("linkswait");
-            $(this).append("<div class='linkToTarget temp'><span>...</span></div>");
-        }
-    });
-	if(notready){
-		updater();
-	}
 }
 
-function updater(t = 1000){
-	if(idle)
-	{
-		idle = false;
-		updaterequest = false;
-		updatePage();
-		idletimer = setTimeout(function(){
-			idle = true;
-			if(updaterequest)
-				updatePage();
-		}, t);
-	}
-	else
-	{
-		updaterequest = true;
-	}
-}
+setInterval(updatePage, updateInterval);
 
-var bodyObserver = false;
-function observeResults(){
-	// console.log("observing");
-	resultsObserver = new MutationObserver(updater);
-	resultsObserver.observe($("#ires #rg")[0], {subtree: true, childList: true});
-	if(bodyObserver !== false)
-		bodyObserver.disconnect();
-}
-
-
-if($("#ires #rg").length>0){
-	observeResults();
-}
-else{
-	bodyObserver = new MutationObserver(function(mutations){
-		if(disableUpdate || !idle){
-			return;
-		}
-		if($("#ires #rg").length>0)
-		{
-			observeResults();
-		}
-	});
-	bodyObserver.observe($("body")[0], {subtree: true, childList: true});
-}
 updatePage();
