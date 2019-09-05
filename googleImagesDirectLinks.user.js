@@ -1,7 +1,7 @@
 // ==UserScript==
-///////////////// In case it fails to update in TamperMonkey, visit  https://github.com/svArtist/Google-Images-Direct-Links/raw/master/googleImagesDirectLinks.user.js  directly ////////
 // @name		Google Images direct links
-// @downloadURL	https://github.com/svArtist/Google-Images-Direct-Links/raw/master/googleImagesDirectLinks.user.js
+// @downloadURL	https://github.com/x-magic/Google-Images-Direct-Links/raw/master/googleImagesDirectLinks.user.js
+// @updateURL	https://github.com/x-magic/Google-Images-Direct-Links/raw/master/googleImagesDirectLinks.user.js
 // @version		1.5
 // @description Add direct links to the picture and the page link to the Google Image Search results.
 // @namespace	Google
@@ -51,13 +51,11 @@ function updatePage()
 			font-size: 28pt; \
 			display: block; \
 			font-weight: bold; \
-			text-decoration: none;\
+			text-decoration: none !important;\
 			transition: color 0.5s, font-size 0.5s, padding 0.5s; \
 		}\
 		.linkToTargetLink:hover{\
 			color: rgba(155,177,233, 1)!important; \
-			padding:8px 20px; \
-			font-size: 36pt; \
 		} \
 		</style>");
 	}
@@ -90,12 +88,12 @@ function updatePage()
 		reflink = decodeURIComponent(reflink.substr(0, reflink.indexOf("&")));
 		piclink = decodeURIComponent(piclink);
 		$(tp).find(".linkToTarget.temp").remove();
-		$(tp).append("<div class='linkToTarget'><a class='linkToTargetLink' href='" + piclink + "'>+</a></div>");
+		$(tp).append("<div class='linkToTarget'><a class='linkToTargetLink' target='_blank' href='" + piclink + "'>+</a></div>");
         $(tp).removeClass("linkswait");
 		$(tp).addClass("linksdone");
 		
 		var urilink = $(tppar).find(".rg_ilmbg")[0];
-		$(urilink).html("<a style='display: block; color: #fff; text-decoration: none;' href='" + reflink + "'>" + urilink.innerHTML + "</a>");
+		$(urilink).html("<a style='display: block; color: #fff; text-decoration: none;' target='_blank' href='" + reflink + "'>" + urilink.innerHTML + "</a>");
 		
 		$(tp).find(".linkToTargetLink").add(urilink).click(function(e){
 			e.stopImmediatePropagation();
